@@ -231,6 +231,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 		else if(p->amount>=p->amount_max){
 			printf("任务：%s  编号：%d  [已完成]\n",p->content,p->num);
 			p->finish=1;
+			head=new_quest(head,p);
 			gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 			exp=p->exp*(1+2*(double)(p->amount-p->amount_max)/(double)p->amount_max);
 			printf("获得%d经验值\n",exp);
@@ -252,7 +253,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 //完成任务
 QUEST *finish_quest(USER *user,QUEST *head)
 {
-	int x,y,z,i,exp,temp,t;
+	int x,y,z,i,exp,temp,t,flag=0;
 	char c;
 	QUEST *p=NULL;
 loop0:	system("clear");
@@ -310,7 +311,8 @@ loop0:	system("clear");
 		}
 		printf("该任务当前完成进度为：%d/%d\n",p->amount,p->amount_max);
 		if(p->amount>=p->amount_max){
-			gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
+			flag=1;
+			//gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 			if(p->finish==-1){
 				temp=p->amount-z;
 				if(temp<=p->amount_max)
@@ -333,8 +335,10 @@ loop0:	system("clear");
 			return head;
 		if(x==1)
 			exp=p->exp;
-		if(x==2)
+		if(x==2){
+			flag=1;
 			exp=p->exp/2;
+		}
 		p->amount=p->amount_max;
 	}
 	else{
@@ -343,13 +347,16 @@ loop0:	system("clear");
 		if(x==0)
 			return head;
 		exp=p->exp;
-		gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
+		flag=1;
+		//gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 		p->amount=p->amount_max;
 	}
-loop1:	p->finish=1;
+loop1:	head=new_quest(head,p);
+	if(flag==1)
+		gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 	get_wyday(p->ddl_year,p->ddl_month,p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
+	p->finish=1;
 	printf("任务：%s  编号：%d  [已完成]\n",p->content,p->num);
-	head=new_quest(head,p);
 	printf("获得%d经验值\n",exp);
 	getchar();
 	user->exp+=exp;
@@ -444,7 +451,7 @@ loop4:			p0=(QUEST *)malloc(sizeof(QUEST));
 				p0->ddl_month+=1;
 				p0->ddl_mday-=temp2;
 			}
-			if(p0->ddl_year==year&&(((p->type==1)&&(i>yday+1))||((p->type==2)&&(i>yday+7)))){
+			if(p0->ddl_year==year&&(((p->type==1)&&(i>yday+2))||((p->type==2)&&(i>yday+14)))){
 				free(p0);
 				break;
 			}
@@ -461,7 +468,6 @@ loop3:			get_wyday(p0->ddl_year,p0->ddl_month,p0->ddl_mday,&p0->ddl_wday,&p0->dd
 				}
 				p1=p1->next;
 			}
-			getchar();
 			head=insert(head,p0);
 			p0=p0->next;
 		}
@@ -590,4 +596,5 @@ int judge_quest(QUEST *p1,QUEST *p2)
 		return 1;
 	else 
 		return 0;
-}		
+}
+
