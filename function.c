@@ -1,18 +1,29 @@
 #include"quest_head.h"
 
+void clear_input()
+{
+	if ( feof(stdin) || ferror(stdin) )
+	{ 
+		/* 如果用户输入文件结束标志（或文件已被读完）， */
+		/* 或者发生读写错误，则退出循环               */
+		//return;
+	}
+	/* 没有发生错误，清空输入流。                 */
+	/* 通过 while 循环把输入流中的余留数据“吃”掉 */
+	int c;
+	while ( (c = getchar()) != '\n' && c != EOF ) ;
+}
+
 //接收m与n之间的整数
 int choice(int m,int n)
 {
 	int x;
-//	fflush(stdin);
 	scanf("%d",&x);
-	setbuf(stdin,NULL);	
-	//fflush(stdin);
+	clear_input();
 	while(x<m||x>n){
 		printf("输入错误！请重新输入：\n");
 		scanf("%d",&x);
-//		fflush(stdin);
-		setbuf(stdin,NULL);	
+		clear_input();
 	}
 	return x;
 }
