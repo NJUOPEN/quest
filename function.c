@@ -41,7 +41,7 @@ void gettime(int *year,int *month,int *mday,int *wday,int *yday)
 	*wday=timeinfo->tm_wday;
 	if(*wday==0)
 		*wday=7;
-	*yday=timeinfo->tm_yday;
+	*yday=timeinfo->tm_yday+1;
 }
 
 //获取指定日期的wday与yday
@@ -55,11 +55,26 @@ void get_wyday(int year,int month,int mday,int *wday,int *yday)
 	*yday=temp;
 	//get wday	
 	gettime(&now_year,&now_month,&now_mday,&now_wday,&now_yday);
-	temp=judge_day_amount(i,0,2)-now_yday;
-	for(i=now_year+1;i<year;i++)
-		temp+=judge_day_amount(i,0,2);
-	temp+=*yday;
-	*wday=temp%7;
+	if(year>now_year||*yday>now_yday){
+		if(year>now_year)
+			temp=judge_day_amount(now_year,0,2)-now_yday+*yday;
+		else
+			temp=*yday-now_yday;
+		for(i=now_year+1;i<year;i++)
+			temp+=judge_day_amount(i,0,2);
+		*wday=(temp%7+now_wday)%7;
+	}
+	else{
+		if(now_year>year)
+			temp=judge_day_amount(year,0,2)-*yday+now_yday;
+		else
+			temp=now_yday-*yday;
+		for(i=year+1;i<now_year;i++)
+			temp+=judge_day_amount(i,0,2);
+		*wday=(now_wday-temp%7)%7;
+	}	
+	if(*wday==0)
+		*wday=7;
 }
 
 //判断指定月或指定年的天数
@@ -206,7 +221,8 @@ int check_num(QUEST *head)
 //检查任务是否超期，是否完成
 QUEST *check_quest(USER *user,QUEST *head)
 {
-	int year,month,mday,wday,yday,x,i=1,exp,temp;	
+	int year,month,mday,wday,yday,x,i=1,exp;
+	double temp;	
 	gettime(&year,&month,&mday,&wday,&yday);
 	QUEST *p=NULL;
 	if(head==NULL)
@@ -217,7 +233,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 			i++;
 			continue;
 		}
-		if((year>p->ddl_year)||(mday>p->ddl_mday)){
+		if((year>p->ddl_year)||(yday>p->ddl_yday)){
 			p->finish=-1;
 			printf("任务：%s  编号：%d  [已超期]  请尽快完成！\n",p->content,p->num);
 			getchar();			
@@ -227,7 +243,11 @@ QUEST *check_quest(USER *user,QUEST *head)
 			if(p->amount_max>1&&p->amount>0){
 				temp=(double)p->amount/(double)p->amount_max;
 				exp=p->exp*temp;
-				printf("任务：%s  编号：%d  完成进度：%d/%d   %.2f\n",p->content,p->num,p->amount,p->amount_max,temp*100);
+				printf("任务：%s  编号：%d  完成进度：%d/%d   %.2f%\n",p->content,p->num,p->amount,p->amount_max,temp*100);
+				if(p->amount>=p->amount_max){
+					p->finish=1;
+					head=new_quest(head,p);
+				}
 				printf("获得%d经验值\n",exp);
 				getchar();
 				user->exp+=exp;
@@ -242,6 +262,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 		else if(p->amount>=p->amount_max){
 			printf("任务：%s  编号：%d  [已完成]\n",p->content,p->num);
 			p->finish=1;
+			head=new_quest(head,p);
 			gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 			exp=p->exp*(1+2*(double)(p->amount-p->amount_max)/(double)p->amount_max);
 			printf("获得%d经验值\n",exp);
@@ -263,7 +284,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 //完成任务
 QUEST *finish_quest(USER *user,QUEST *head)
 {
-	int x,y,z,i,exp,temp,t;
+	int x,y,z,i,exp,temp,t,flag=0;
 	char c;
 	QUEST *p=NULL;
 loop0:	system("clear");
@@ -321,7 +342,8 @@ loop0:	system("clear");
 		}
 		printf("该任务当前完成进度为：%d/%d\n",p->amount,p->amount_max);
 		if(p->amount>=p->amount_max){
-			gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
+			flag=1;
+			//gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 			if(p->finish==-1){
 				temp=p->amount-z;
 				if(temp<=p->amount_max)
@@ -344,8 +366,10 @@ loop0:	system("clear");
 			return head;
 		if(x==1)
 			exp=p->exp;
-		if(x==2)
+		if(x==2){
+			flag=1;
 			exp=p->exp/2;
+		}
 		p->amount=p->amount_max;
 	}
 	else{
@@ -354,13 +378,16 @@ loop0:	system("clear");
 		if(x==0)
 			return head;
 		exp=p->exp;
-		gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
+		flag=1;
+		//gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 		p->amount=p->amount_max;
 	}
-loop1:	p->finish=1;
+loop1:	head=new_quest(head,p);
+	if(flag==1)
+		gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 	get_wyday(p->ddl_year,p->ddl_month,p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
+	p->finish=1;
 	printf("任务：%s  编号：%d  [已完成]\n",p->content,p->num);
-	head=new_quest(head,p);
 	printf("获得%d经验值\n",exp);
 	getchar();
 	user->exp+=exp;
@@ -472,7 +499,6 @@ loop3:			get_wyday(p0->ddl_year,p0->ddl_month,p0->ddl_mday,&p0->ddl_wday,&p0->dd
 				}
 				p1=p1->next;
 			}
-			getchar();
 			head=insert(head,p0);
 			p0=p0->next;
 		}
@@ -601,4 +627,5 @@ int judge_quest(QUEST *p1,QUEST *p2)
 		return 1;
 	else 
 		return 0;
-}		
+}
+
