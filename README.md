@@ -6,15 +6,20 @@
 
 使用方法：
 ------------
-1.从[GITHUB]<https://github.com/NJUOPEN/quest>上下载项目文件；
+1.从[GITHUB](https://github.com/NJUOPEN/quest)上下载项目文件；
 
-2.64位Linux可直接执行已编译好的二进制文件：
+2.若已安装编译工具（如cmake），则执行一下命令进行编译：
 
-	./quest
+	cd quest
+	make
 
-3.其他版本操作系统的用户请先编译，然后执行：
+3.否则，使用编译命令（如gcc）进行编译：
 
+	cd quest
 	gcc menu.c quest.c SL.c function.c -o quest
+	
+4.运行程序：
+
 	./quest
 
 帮助与支持
