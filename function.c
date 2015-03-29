@@ -92,12 +92,14 @@ int judge_day_amount(int year,int month,int type)//type=1，返回当月有几�
 				return 28;
 		}
 	}
-	if(type==2){
+	else if(type==2){
 		if(year%4==0&&year%100!=0)
 			return 366;
 		else
 			return 365;
 	}
+	else
+		return 0;
 }
 
 //链表数据按num升序插入
@@ -243,7 +245,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 			if(p->amount_max>1&&p->amount>0){
 				temp=(double)p->amount/(double)p->amount_max;
 				exp=p->exp*temp;
-				printf("任务：%s  编号：%d  完成进度：%d/%d   %.2f%\n",p->content,p->num,p->amount,p->amount_max,temp*100);
+				printf("任务：%s  编号：%d  完成进度：%d/%d   %.2f\n",p->content,p->num,p->amount,p->amount_max,temp*100);
 				if(p->amount>=p->amount_max){
 					p->finish=1;
 					head=new_quest(head,p);
@@ -284,8 +286,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 //完成任务
 QUEST *finish_quest(USER *user,QUEST *head)
 {
-	int x,y,z,i,exp,temp,t,flag=0;
-	char c;
+	int x,y,z,exp,temp,t,flag=0;
 	QUEST *p=NULL;
 loop0:	system("clear");
 	print_userinfo(*user);
@@ -414,10 +415,19 @@ void level_up(USER *user)
 	}
 }
 
+//比较两个任务是否相同（除了num）
+int judge_quest(QUEST *p1,QUEST *p2)
+{
+	if(strcmp(p1->content,p2->content)==0&&p1->type==p2->type&&p1->exp==p2->exp&&p1->amount_max==p2->amount_max&&p1->ddl_year==p2->ddl_year&&p1->ddl_month==p2->ddl_month&&p1->ddl_mday==p2->ddl_mday)
+		return 1;
+	else 
+		return 0;
+}
+
 //新建任务
 QUEST *new_quest(QUEST *head,QUEST *p)
 {
-	int i,j,k,year,month,mday,wday,yday,temp1,temp2,t=0;
+	int i,j,k,year,month,mday,wday,yday,temp1,temp2;
 	QUEST *p0=NULL,*p1=NULL;
 	gettime(&year,&month,&mday,&wday,&yday);
 	i=p->ddl_yday;
@@ -510,7 +520,7 @@ loop3:			get_wyday(p0->ddl_year,p0->ddl_month,p0->ddl_mday,&p0->ddl_wday,&p0->dd
 QUEST *change_quest(USER user,QUEST *head)
 {
 	QUEST *p=NULL;
-	int x,y,i,z,j,k,t;
+	int x,y,z,j,k,t;
 loop6:	system("clear");
 	print_quest(head,1);
 	printf("请输入要修改任务的编号,返回请输入0：\n");
@@ -565,7 +575,7 @@ loop5:	printf("请选择要修改的数据：\n");
 		printf("请选择修改后的类型：\n");
 		printf("1.每天  2.每周  3.每月  4.每年  5.仅一次\n");
 		z=choice(1,5);
-		p->type==z;
+		p->type=z;
 		gettime(&p->ddl_year,&p->ddl_month,&p->ddl_mday,&p->ddl_wday,&p->ddl_yday);
 		j=judge_day_amount(p->ddl_year,p->ddl_month,2);
 		k=judge_day_amount(p->ddl_year,p->ddl_month,1);
@@ -573,7 +583,7 @@ loop5:	printf("请选择要修改的数据：\n");
 			case 1: break;
 			case 2: printf("请选择截止时间：\n");
 				printf("1.每周一  2.每周二  3.每周三  4.每周四  5.每周五  6.每周六  7.每周日\n");
-				i=choice(1,7);
+				x=choice(1,7);
 				if(x<p->ddl_wday){
 					p->ddl_mday+=7-p->ddl_wday+x;
 					p->ddl_yday+=7-p->ddl_wday+x;
@@ -618,14 +628,6 @@ loop5:	printf("请选择要修改的数据：\n");
 		goto loop5;
 	if(y==2)
 		goto loop6;
+	else
+		return head;
 }
-
-//比较两个任务是否相同（除了num）
-int judge_quest(QUEST *p1,QUEST *p2)
-{
-	if(strcmp(p1->content,p2->content)==0&&p1->type==p2->type&&p1->exp==p2->exp&&p1->amount_max==p2->amount_max&&p1->ddl_year==p2->ddl_year&&p1->ddl_month==p2->ddl_month&&p1->ddl_mday==p2->ddl_mday)
-		return 1;
-	else 
-		return 0;
-}
-

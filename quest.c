@@ -2,10 +2,9 @@
 
 int main(void)
 {
-	int x,y,z,i,j,k,temp;
+	int x,y,z,k;
 	QUEST *p=NULL,*head=NULL;
 	USER user;
-	FILE *fp;
 	user.level=0;
 	user.exp=0;
 	user.exp_max=50;

@@ -15,14 +15,14 @@ void print_userinfo(USER user)
 		printf("=");
 	for(;i<=100;i+=10)
 		printf(" ");
-	printf("]%.2f%\n\n",temp);
+	printf("]%.2f\n\n",temp);
 	printf("                               时间：%4d-%02d-%02d\n",year,month,mday);
 	printf("                         -----------------------------\n\n");
 }
 
 void print_quest(QUEST *head,int type)//type=1，未完成任务；type=2，已完成任务；type=3，所有任务
 {
-	int i,j,k,t=0;
+	int i,t=0;
 	double temp;
 	QUEST *p=NULL;
 	p=head;
@@ -46,7 +46,7 @@ void print_quest(QUEST *head,int type)//type=1，未完成任务；type=2，已�
 			printf("=");
 		for(;i<=100;i+=10)
 			printf(" ");
-		printf("]%.2f%\n",temp);
+		printf("]%.2f\n",temp);
 		if(p->finish==1)
 			printf("完成时间：");
 		else
