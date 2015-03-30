@@ -245,7 +245,7 @@ QUEST *check_quest(USER *user,QUEST *head)
 			if(p->amount_max>1&&p->amount>0){
 				temp=(double)p->amount/(double)p->amount_max;
 				exp=p->exp*temp;
-				printf("任务：%s  编号：%d  完成进度：%d/%d   %.2f\n",p->content,p->num,p->amount,p->amount_max,temp*100);
+				printf("任务：%s  编号：%d  完成进度：%d/%d   %.2f%%\n",p->content,p->num,p->amount,p->amount_max,temp*100);
 				if(p->amount>=p->amount_max){
 					p->finish=1;
 					head=new_quest(head,p);
